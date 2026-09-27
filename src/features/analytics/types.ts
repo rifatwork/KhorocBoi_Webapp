@@ -1,6 +1,6 @@
 import { endOfDay, startOfDay } from "@/shared/lib/dates";
 
-export type DateRangePreset = "thisMonth" | "last3Months" | "last6Months" | "custom";
+export type DateRangePreset = "thisMonth" | "last3Months" | "last6Months" | "custom" | "month" | "year";
 
 export interface DateRange {
   start: Date;
@@ -23,6 +23,23 @@ export function lastMonthsRange(months: 3 | 6, now = new Date()): DateRange {
     start: new Date(now.getFullYear(), now.getMonth() - (months - 1), 1),
     end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
     preset: months === 3 ? "last3Months" : "last6Months",
+  };
+}
+
+/** `month` is 1-12. */
+export function monthRange(year: number, month: number): DateRange {
+  return {
+    start: new Date(year, month - 1, 1),
+    end: new Date(year, month, 0, 23, 59, 59),
+    preset: "month",
+  };
+}
+
+export function yearRange(year: number): DateRange {
+  return {
+    start: new Date(year, 0, 1),
+    end: new Date(year, 11, 31, 23, 59, 59),
+    preset: "year",
   };
 }
 

@@ -2,25 +2,46 @@
 
 import { TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageBody, PageHeader } from "@/features/shell/components/PageHeader";
 import { CategoryIcon, EntryList } from "@/features/tabs/components/SpendingSummary";
 import { Modal } from "@/shared/components/Modal";
-import { formatDate } from "@/shared/lib/dates";
+import { formatDate, monthName } from "@/shared/lib/dates";
 import { formatTaka } from "@/shared/lib/money";
 import { useAnalytics } from "../hooks/useAnalytics";
-import { lastMonthsRange, thisMonthRange, type DateRangePreset } from "../types";
+import { lastMonthsRange, monthRange, thisMonthRange, yearRange, type DateRangePreset } from "../types";
 import { CustomDatePicker } from "./CustomDatePicker";
 import { DailyTrendChart } from "./DailyTrendChart";
 
 const card = "rounded-3xl border border-line/50 bg-surface p-5 shadow-card sm:p-6";
 
-export function AnalyticsView() {
+interface AnalyticsViewProps {
+  /** Opens on this year (or month of it, 1-12) when linked from an archive folder. */
+  year?: number;
+  month?: number;
+}
+
+export function AnalyticsView({ year, month }: AnalyticsViewProps) {
   const { range, setRange, tabs, total, daily, highestDay, categories } = useAnalytics();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [dayOpen, setDayOpen] = useState(false);
 
+  useEffect(() => {
+    if (year) setRange(month ? monthRange(year, month) : yearRange(year));
+  }, [year, month, setRange]);
+
+  const periodLabel = year ? (month ? `${monthName(month - 1)} ${year}` : String(year)) : null;
+
   const presets: { label: string; preset: DateRangePreset; onSelect: () => void }[] = [
+    ...(year && periodLabel
+      ? [
+          {
+            label: periodLabel,
+            preset: (month ? "month" : "year") as DateRangePreset,
+            onSelect: () => setRange(month ? monthRange(year, month) : yearRange(year)),
+          },
+        ]
+      : []),
     { label: "This Month", preset: "thisMonth", onSelect: () => setRange(thisMonthRange()) },
     { label: "Last 3 Months", preset: "last3Months", onSelect: () => setRange(lastMonthsRange(3)) },
     { label: "Last 6 Months", preset: "last6Months", onSelect: () => setRange(lastMonthsRange(6)) },
@@ -33,7 +54,10 @@ export function AnalyticsView() {
 
   return (
     <>
-      <PageHeader title="Analytics" backHref="/" />
+      <PageHeader
+        title="Analytics"
+        backHref={year ? (month ? `/archive/${year}/${month}` : `/archive/${year}`) : "/"}
+      />
       <PageBody>
         <div className="flex flex-wrap items-center gap-2">
           {presets.map(({ label, preset, onSelect }) => {

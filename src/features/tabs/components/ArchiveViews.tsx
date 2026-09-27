@@ -1,5 +1,6 @@
 "use client";
 
+import { PeriodInsightCard } from "@/features/analytics/components/PeriodInsightCard";
 import { PageBody, PageHeader } from "@/features/shell/components/PageHeader";
 import { monthName } from "@/shared/lib/dates";
 import { findMonthArchive, useDashboardArchive } from "../hooks/useDashboardArchive";
@@ -22,6 +23,7 @@ export function YearArchiveView({ year }: { year: number }) {
     <>
       <PageHeader title={String(year)} backHref="/" />
       <PageBody>
+        <PeriodInsightCard year={year} />
         {hydrated && months.length === 0 ? (
           <EmptyMessage>{`No archived tabs for ${year}`}</EmptyMessage>
         ) : (
@@ -54,6 +56,7 @@ export function MonthArchiveView({ year, month }: { year: number; month: number 
     <>
       <PageHeader title={title} backHref={isPastYear ? `/archive/${year}` : "/"} />
       <PageBody>
+        <PeriodInsightCard year={year} month={month} />
         {hydrated && monthTabs.length === 0 ? (
           <EmptyMessage>{`No archived tabs in ${title}`}</EmptyMessage>
         ) : (

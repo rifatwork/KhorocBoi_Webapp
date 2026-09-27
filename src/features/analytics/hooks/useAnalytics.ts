@@ -6,7 +6,14 @@ import { tabsForSelection } from "@/features/tabs/services/tabStore";
 import { useTabStore } from "@/features/tabs/hooks/useTabs";
 import { CATEGORIES, type DailyTab } from "@/features/tabs/types";
 import { dateKey, parseIso, startOfDay } from "@/shared/lib/dates";
-import { thisMonthRange, type CategoryTotal, type DailyTotal, type DateRange } from "../types";
+import {
+  monthRange,
+  thisMonthRange,
+  yearRange,
+  type CategoryTotal,
+  type DailyTotal,
+  type DateRange,
+} from "../types";
 
 /** Selected range survives navigation within the session. */
 let currentRange: DateRange = thisMonthRange();
@@ -80,6 +87,57 @@ export function useAnalytics(): AnalyticsResult {
 
     return { range, setRange, hydrated, tabs, total, daily, highestDay, categories };
   }, [allTabs, range, hydrated]);
+}
+
+export interface PeriodInsight {
+  total: number;
+  tabCount: number;
+  itemCount: number;
+  activeDays: number;
+  averagePerDay: number;
+  topCategory: { category: string; total: number } | null;
+  previousTotal: number;
+}
+
+function sumTabs(tabs: DailyTab[]) {
+  return tabs.reduce((sum, t) => sum + tabTotal(t), 0);
+}
+
+/** Spending for a whole month (`month` 1-12) or, when `month` is omitted, a whole year. */
+export function usePeriodInsight(year: number, month?: number): PeriodInsight {
+  const { tabs: allTabs } = useTabStore();
+
+  return useMemo(() => {
+    const range = month ? monthRange(year, month) : yearRange(year);
+    const previous = month
+      ? monthRange(month === 1 ? year - 1 : year, month === 1 ? 12 : month - 1)
+      : yearRange(year - 1);
+    const tabs = tabsForSelection(allTabs, range.start, range.end);
+    const total = sumTabs(tabs);
+    const activeDays = new Set(tabs.filter((t) => tabTotal(t) > 0).map((t) => dateKey(t.date))).size;
+
+    const sums = new Map<string, number>();
+    for (const tab of tabs) {
+      for (const e of tab.entries) {
+        const cat = e.category ?? "other";
+        sums.set(cat, (sums.get(cat) ?? 0) + e.amount);
+      }
+    }
+    const top = [...sums.entries()].reduce<[string, number] | null>(
+      (best, cur) => (best === null || cur[1] > best[1] ? cur : best),
+      null,
+    );
+
+    return {
+      total,
+      tabCount: tabs.length,
+      itemCount: tabs.reduce((sum, t) => sum + t.entries.length, 0),
+      activeDays,
+      averagePerDay: activeDays ? total / activeDays : 0,
+      topCategory: top && top[1] > 0 ? { category: top[0], total: top[1] } : null,
+      previousTotal: sumTabs(tabsForSelection(allTabs, previous.start, previous.end)),
+    };
+  }, [allTabs, year, month]);
 }
 
 export function useMonthTotal() {
