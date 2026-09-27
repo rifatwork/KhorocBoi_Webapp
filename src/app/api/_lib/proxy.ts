@@ -1,31 +1,43 @@
-const DEFAULT_SYNC_SERVER = "https://khorocboi-server.vercel.app";
+import "server-only";
+import { syncServerUrl } from "./env";
+import { json } from "./guard";
 
-function syncServerUrl(): string {
-  return (process.env.SYNC_SERVER_URL ?? DEFAULT_SYNC_SERVER).trim().replace(/\/+$/, "");
-}
+const PASSTHROUGH_ERRORS = new Set([400, 401, 404, 413, 429]);
 
-/** Forwards a JSON POST to khorocboi-server, passing status and body through. */
-export async function forwardToSyncServer(request: Request, path: string): Promise<Response> {
-  let body: string;
+/** Forwards an already-validated JSON payload to khorocboi-server. */
+export async function forwardToSyncServer(path: string, payload: unknown): Promise<Response> {
+  let base: string;
   try {
-    body = JSON.stringify(await request.json());
-  } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+    base = syncServerUrl();
+  } catch (error) {
+    console.error("Sync proxy misconfigured:", error);
+    return json({ error: "Backup is not configured on this server." }, 500);
   }
 
   try {
-    const upstream = await fetch(`${syncServerUrl()}${path}`, {
+    const upstream = await fetch(`${base}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body,
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(20_000),
       cache: "no-store",
+      redirect: "error",
     });
-    return new Response(await upstream.text(), {
-      status: upstream.status,
-      headers: { "Content-Type": upstream.headers.get("Content-Type") ?? "application/json" },
-    });
+
+    if (upstream.ok || PASSTHROUGH_ERRORS.has(upstream.status)) {
+      const text = await upstream.text();
+      let body: unknown;
+      try {
+        body = JSON.parse(text);
+      } catch {
+        body = { error: "Unexpected reply from backup server" };
+      }
+      return json(body, upstream.status);
+    }
+
+    console.error(`Sync server ${path} responded ${upstream.status}`);
+    return json({ error: "Backup server error. Try again later." }, 502);
   } catch {
-    return Response.json({ error: "Backup server is unreachable. Try again later." }, { status: 502 });
+    return json({ error: "Backup server is unreachable. Try again later." }, 502);
   }
 }
