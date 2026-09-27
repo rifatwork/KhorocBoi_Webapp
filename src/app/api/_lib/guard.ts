@@ -90,7 +90,7 @@ export async function guardJsonPost(
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const CODE_RE = /^\d{4,64}$/;
 
-/** Mirrors khorocboi-server's rules so bad input is rejected before it leaves this app. */
+/** Email + digit passcode, same rules the mobile app already enforces. */
 export function readCredentials(
   body: unknown,
 ): { email: string; code: string } | { error: string } {
