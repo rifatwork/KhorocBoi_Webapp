@@ -30,7 +30,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-
+# env files — secrets go in Vercel → Settings → Environment Variables, never in git
+.env*
+!.env.example
 
 # vercel
 .vercel
