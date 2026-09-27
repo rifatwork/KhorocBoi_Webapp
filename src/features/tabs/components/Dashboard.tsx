@@ -37,7 +37,7 @@ export function Dashboard() {
         <MonthlyInsightCard />
 
         {!hydrated ? (
-          <div className="mt-8 grid gap-3 md:grid-cols-2">
+          <div className="mt-8 grid grid-cols-1 gap-3 md:grid-cols-2">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="h-24 animate-pulse rounded-2xl bg-surface-container" />
             ))}
@@ -60,7 +60,7 @@ export function Dashboard() {
         ) : (
           <>
             <h2 className="mb-3 mt-8 font-display text-xl font-semibold">Recent History</h2>
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {archive.recentTabs.map((tab) => {
                 const count = sameDayCount(tab);
                 return (
@@ -77,7 +77,7 @@ export function Dashboard() {
             {(archive.currentYearMonths.length > 0 || archive.pastYears.length > 0) && (
               <>
                 <h2 className="mb-3 mt-8 font-display text-xl font-semibold">Archive</h2>
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {archive.currentYearMonths.map((m) => (
                     <FolderTile
                       key={`${m.year}-${m.month}`}

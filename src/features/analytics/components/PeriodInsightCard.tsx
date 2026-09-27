@@ -12,11 +12,19 @@ interface PeriodInsightCardProps {
   month?: number;
 }
 
-function Stat({ label, value, capitalize }: { label: string; value: string; capitalize?: boolean }) {
+interface StatProps {
+  label: string;
+  value: string;
+  detail?: string;
+  capitalize?: boolean;
+}
+
+function Stat({ label, value, detail, capitalize }: StatProps) {
   return (
-    <span className="block rounded-2xl bg-[#0050cb]/35 px-3 py-2">
+    <span className="block min-w-0 rounded-2xl bg-[#0050cb]/35 px-3 py-2">
       <span className="block font-mono text-[10px] uppercase tracking-widest opacity-75">{label}</span>
       <span className={`block truncate font-semibold ${capitalize ? "capitalize" : ""}`}>{value}</span>
+      {detail && <span className="block truncate text-xs opacity-85">{detail}</span>}
     </span>
   );
 }
@@ -61,13 +69,14 @@ export function PeriodInsightCard({ year, month }: PeriodInsightCardProps) {
       </span>
 
       <span className="relative mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Stat label="Tabs" value={`${insight.tabCount} · ${insight.itemCount} items`} />
+        <Stat label="Tabs" value={String(insight.tabCount)} detail={`${insight.itemCount} items`} />
         <Stat label="Active days" value={String(insight.activeDays)} />
         <Stat label="Avg / day" value={formatTaka(insight.averagePerDay)} />
         <Stat
           label="Top category"
           capitalize
-          value={insight.topCategory ? `${insight.topCategory.category} · ${formatTaka(insight.topCategory.total)}` : "—"}
+          value={insight.topCategory?.category ?? "—"}
+          detail={insight.topCategory ? formatTaka(insight.topCategory.total) : undefined}
         />
       </span>
 

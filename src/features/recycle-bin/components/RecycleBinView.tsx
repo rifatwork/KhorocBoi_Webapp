@@ -62,7 +62,7 @@ export function RecycleBinView() {
             <p className="mt-3 text-lg">No deleted tabs</p>
           </div>
         ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {recycled.map((item) => {
               const tab = item.tab;
               const title = hasCustomTitle(tab) ? tab.customTitle.trim() : displayTitle(tab, 1, "d MMM yyyy");

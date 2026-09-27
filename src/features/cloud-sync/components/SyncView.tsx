@@ -101,7 +101,7 @@ export function SyncView() {
             </button>
           </form>
         ) : (
-          <div className="mt-6 grid gap-2 sm:grid-cols-2">
+          <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <button
               type="button"
               disabled={isBusy}

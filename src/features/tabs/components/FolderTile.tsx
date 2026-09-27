@@ -13,7 +13,7 @@ export function FolderTile({ href, title, subtitle, variant = "month" }: FolderT
   return (
     <Link
       href={href}
-      className="flex items-center gap-4 rounded-2xl border border-line/50 bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-primary-strong/40 sm:p-5"
+      className="flex min-w-0 items-center gap-4 rounded-2xl border border-line/50 bg-surface p-4 shadow-card transition hover:-translate-y-0.5 hover:border-primary-strong/40 sm:p-5"
     >
       <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-primary-strong/10 text-primary">
         <Icon className="size-5" />

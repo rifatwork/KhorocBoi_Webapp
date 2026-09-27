@@ -88,7 +88,7 @@ export function AnalyticsView({ year, month }: AnalyticsViewProps) {
           )}
         </p>
 
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="rounded-3xl border-t-4 border-primary bg-primary-strong p-6 text-on-primary shadow-card sm:p-8 lg:col-span-2">
             <p className="font-mono text-xs uppercase tracking-widest opacity-80">Total spending</p>
             <p className="mt-2 font-display text-4xl font-bold tracking-tight sm:text-5xl">{formatTaka(total)}</p>
@@ -115,7 +115,7 @@ export function AnalyticsView({ year, month }: AnalyticsViewProps) {
           )}
         </div>
 
-        <div className="mt-4 grid gap-4 lg:grid-cols-5">
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-5">
           <section className={`${card} lg:col-span-3`}>
             <h2 className="mb-4 font-display text-xl font-semibold">Daily spending trend</h2>
             <DailyTrendChart daily={daily} />

@@ -27,7 +27,7 @@ export function YearArchiveView({ year }: { year: number }) {
         {hydrated && months.length === 0 ? (
           <EmptyMessage>{`No archived tabs for ${year}`}</EmptyMessage>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {months.map((m) => (
               <FolderTile
                 key={m.month}
@@ -60,7 +60,7 @@ export function MonthArchiveView({ year, month }: { year: number; month: number 
         {hydrated && monthTabs.length === 0 ? (
           <EmptyMessage>{`No archived tabs in ${title}`}</EmptyMessage>
         ) : (
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {monthTabs.map((tab) => {
               const count = sameDayCount(tab);
               return (

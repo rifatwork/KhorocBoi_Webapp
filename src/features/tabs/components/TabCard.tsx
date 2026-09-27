@@ -14,7 +14,7 @@ interface TabCardProps {
 
 export function TabCard({ tab, sameDayCount, onDelete }: TabCardProps) {
   return (
-    <div className="group relative rounded-2xl border border-line/50 bg-surface shadow-card transition hover:-translate-y-0.5 hover:border-primary-strong/40 hover:shadow-float">
+    <div className="group relative min-w-0 rounded-2xl border border-line/50 bg-surface shadow-card transition hover:-translate-y-0.5 hover:border-primary-strong/40 hover:shadow-float">
       <Link href={`/tab/${tab.id}`} className="flex items-start gap-4 p-4 pr-14 sm:p-5 sm:pr-14">
         <span className="grid size-12 shrink-0 place-items-center rounded-full bg-secondary-soft/60 text-primary">
           <CalendarCheck className="size-5" />
