@@ -42,6 +42,52 @@ async function upstashHit(
   return incr.result;
 }
 
+async function upstashPeek(
+  config: { url: string; token: string },
+  key: string,
+): Promise<{ count: number; ttlMs: number }> {
+  const res = await fetch(`${config.url}/pipeline`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${config.token}`, "Content-Type": "application/json" },
+    body: JSON.stringify([
+      ["GET", key],
+      ["PTTL", key],
+    ]),
+    signal: AbortSignal.timeout(3_000),
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Upstash ${res.status}`);
+  const [get, ttl] = (await res.json()) as [{ result?: string | null }, { result?: number }];
+  return { count: Number(get?.result ?? 0) || 0, ttlMs: Math.max(0, ttl?.result ?? 0) };
+}
+
+function memoryPeek(key: string): { count: number; ttlMs: number } {
+  const bucket = memory.get(key);
+  const now = Date.now();
+  if (!bucket || bucket.resetAt <= now) return { count: 0, ttlMs: 0 };
+  return { count: bucket.count, ttlMs: bucket.resetAt - now };
+}
+
+/** Checks a bucket without counting a hit, e.g. to block after too many recorded failures. */
+export async function limitReached(
+  bucket: string,
+  id: string,
+  limit: number,
+): Promise<{ blocked: boolean; retryAfterSec: number }> {
+  const key = `khorocboi:web:rl:${bucket}:${id}`;
+  const config = upstashConfig();
+  let state: { count: number; ttlMs: number };
+  try {
+    state = config ? await upstashPeek(config, key) : memoryPeek(key);
+  } catch {
+    state = memoryPeek(key);
+  }
+  return {
+    blocked: state.count >= limit,
+    retryAfterSec: Math.max(1, Math.ceil(state.ttlMs / 1000)),
+  };
+}
+
 /**
  * Fixed-window limiter. Shared across serverless instances when Upstash is configured;
  * otherwise per-instance memory (still stops bursts, but resets on cold starts).

@@ -11,6 +11,9 @@ const ShellContext = createContext<{ openDrawer: () => void }>({ openDrawer: () 
 export const useShell = () => useContext(ShellContext);
 
 const REFOCUS_SYNC_AFTER_MS = 60_000;
+// Keep full syncs under the per-IP /api/restore limit (30 per 10 min).
+const POLL_INTERVAL_MS = 30_000;
+const POLL_SYNC_AFTER_MS = 90_000;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -29,8 +32,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         void syncController.maybeAutoSync(REFOCUS_SYNC_AFTER_MS);
       }
     };
+    const poll = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void syncController.maybeAutoSync(POLL_SYNC_AFTER_MS);
+      }
+    }, POLL_INTERVAL_MS);
     document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   useEffect(() => {
